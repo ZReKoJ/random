@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Randomizer</title>
+    <meta charset="utf-8" />
+	<!-- util -->
+	<style>
+		:root {
+			--primary-color: #344955;
+			--primary-light-color: #4A6572;
+			--primary-dark-color: #232F34;
+			--secondary-color: #F9AA33;
+			--secondary-light-color: #FFDC65;
+			--secondary-dark-color: #C17B00;
+			--background-color: lightgrey;
+			--surface-color: #FFFFFF;
+
+			--on-primary-color: #FFFFFF;
+			--on-secondary-color: #000000;
+			--on-background-color: #000000;
+			--on-surface-color: #000000;
+
+			--info-color: #5BC0DE;
+			--success-color: #449D44;
+			--warning-color: #F0AD4E;
+			--error-color: #D9534F;
+
+			--on-info-color: #FFFFFF;
+			--on-success-color: #FFFFFF;
+			--on-warning-color: #FFFFFF;
+			--on-error-color: #FFFFFF;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: 'Open Sans', sans-serif;
+		}
+
+		.info {
+			color: var(--info-color);
+		}
+
+		.success {
+			color: var(--success-color);
+		}
+
+		.warning {
+			color: var(--warning-color);
+		}
+
+		.error {
+			color: var(--error-color);
+		}
+
+		.img-width-fill {
+			width: 100%;
+			height: auto;
+		}
+
+		.img-height-fill {
+			width: auto;
+			height: 100%;
+		}
+
+		.round {
+			border-radius: 50%;
+		}
+
+		.button {
+			-webkit-appearance: button;
+			display: flex;
+			padding: 6px 12px;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			cursor: pointer;
+			border: 1px solid transparent;
+			text-decoration: none;
+			font-weight: bold;
+			user-select: none;
+		}
+
+		.button:focus {
+			outline: none;
+		}
+
+		.text-cut {
+			white-space: nowrap; 
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.select-none {
+			user-select: none;
+		}
+
+		.resizer#top {
+			cursor: ns-resize;
+		}
+
+		.resizer#right {
+			cursor: ew-resize;
+		}
+
+		.resizer#bottom {
+			cursor: ns-resize;
+		}
+
+		.resizer#left {
+			cursor: ew-resize;
+		}
+
+		.resizer#top-left {
+			cursor: nwse-resize;
+		}
+
+		.resizer#top-right {
+			cursor: nesw-resize;
+		}
+
+		.resizer#bottom-right {
+			cursor: nwse-resize;
+		}
+
+		.resizer#bottom-left {
+			cursor: nesw-resize;
+		}
+	</style>
+	<!-- header -->
+	<style>
+		.header {
+			display: flex;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 50px;
+			justify-content: space-between;
+			align-items: center;
+			background-color: var(--primary-dark-color);
+			z-index: 100;
+		}
+
+		.nav-bar {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: row;
+		}
+
+		.nav-bar>input[type="checkbox"] {
+			display: none !important;
+		}
+
+		.menu,
+		.hidden-menu {
+			list-style-type: none;
+		}
+
+		.menu {
+			min-width: 450px;
+		}
+
+		.menu>li {
+			float: left;
+		}
+
+		.hidden-menu {
+			display: none;
+		}
+
+		.menu>li>a {
+			background-color: var(--primary-dark-color);
+		}
+
+		.hidden-menu>li>a {
+			background-color: var(--primary-color);
+		}
+
+		.nav-bar a {
+			display: block;
+			min-width: 150px;
+			height: calc(100% - 1px);
+			text-align: center;
+			line-height: calc(50px - 1px);
+			color: var(--on-primary-color);
+			text-decoration: none;
+			margin-top: 1px;
+			font-size: 16px;
+		}
+
+		.nav-bar a:hover {
+			background-color: var(--primary-light-color);
+		}
+
+		.menu>li>a:hover~.hidden-menu {
+			display: block;
+		}
+
+		.hidden-menu:hover {
+			display: block;
+		}
+
+		.nav-bar>.notification-panel {
+			height: 100%;
+			flex-grow: 100;
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.nav-bar>.notification-panel>#notification {
+			font-weight: bold;    
+			text-align: center;
+		}
+
+		@media screen and (max-width : 650px) {
+
+			.nav-bar>input[type="checkbox"]::before {
+				content: attr(value);
+			}
+
+			.nav-bar>input[type="checkbox"] {
+				display: flex !important;
+				min-width: 150px;
+				height: 100%;
+				color: var(--on-primary-color);
+				font-weight: normal;
+				font-size: 16px;
+				margin: 0;
+			}
+
+			.nav-bar>input[type="checkbox"]:hover {
+				background-color: var(--primary-light-color);
+			}
+
+			.menu {
+				display: none;
+				position: absolute;
+				top: 50px;
+			}
+
+			.nav-bar>input[type="checkbox"]:checked~.menu {
+				display: block;
+			}
+		}
+	</style>
+	<!-- Adhoc -->
+	<style>
+		.main {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			top: 50px;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			width: calc(100% - 60px);
+			height: calc(100% - 50px - 60px);
+			background-color: var(--surface-color);
+			padding: 30px;
+		}
+		
+		:root {
+		  --top: 20px;
+		  --left: 20px;
+		  --tamano: 350px;
+		  --grados: 45deg;
+		  --rotacion: 0deg;
+		  --color-impar: turquoise;
+		  --color-par: yellow;
+		  --color-borde: #000;
+		  --color-flecha: black;
+		  --color-centro: red;
+		  --color-divisor: #449;
+		}
+
+		#triangulo {
+		  position: absolute;
+		  top: calc(var(--top) + var(--tamano)/30);left: calc(var(--left) + var(--tamano)/30);
+		  width: 0;height: 0; 
+		  border-left: calc(var(--tamano)/15) solid transparent;
+		  border-right: calc(var(--tamano)/15) solid transparent;
+		  border-bottom: calc(var(--tamano)/5) solid var(--color-flecha);
+		  transform: translate(calc(var(--tamano)/2),calc(var(--tamano)/2)) translate(-50%,-104.5%);
+		}
+		#triangulo:after {
+		  position: absolute;
+		  width: calc(var(--tamano)/15);height: calc(var(--tamano)/15);
+		  top: 100%;left: 0%;
+		  transform: translate(-50%,260%);
+		  content: "";
+		  background-color: var(--color-centro);
+		  border-radius: 50%;
+		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
+		}
+
+		#ruleta {
+		  position: absolute;
+		  top: var(--top);left: var(--left);
+		  width: var(--tamano);height: var(--tamano);
+		  background-color: red;
+		  border-radius: 50%;
+		  border: calc(var(--tamano)/30) solid var(--color-borde);
+		  will-change: transform;transition: transform 10s cubic-bezier(0,0,0.3,1);
+		  transform: rotate(var(--rotacion));
+		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
+		}
+
+		#ruleta:hover {
+		  --rotacion: 4000deg;
+		}
+
+		#ruleta:after {
+		  position: absolute;
+		  width: calc(var(--tamano)/7.5);height: calc(var(--tamano)/7.5);
+		  top: 50%;left: 50%;
+		  transform: translate(-50%,-50%);
+		  content: "";
+		  background-color: var(--color-flecha);
+		  border-radius: 50%;
+		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
+		}
+
+		#caras div {
+		  position: absolute;
+		  top: calc(var(--tamano)/2);left: calc(var(--tamano)/2);
+		  width: calc(var(--tamano)/6);height: calc(var(--tamano)/6);
+		  background-color: blueviolet;
+		  border-radius: 50%; 
+		  transform-origin: 0 0;
+		  transform: rotate(calc(var(--grados) * var(--posicion))) translate(0,calc(-1 * var(--tamano) / 2.7)) translate(-50%,-50%);
+		}
+
+		#divisores div {
+		  position: absolute;
+		  top: calc(var(--tamano)/2);left: calc(var(--tamano)/2);
+		  width: calc(var(--tamano)/40);height: calc(var(--tamano)/2);
+		  background-color: var(--color-divisor);
+		  transform-origin: 0 0;
+		  transform: rotate(calc(var(--grados) / 2 + var(--grados) * var(--posicion))) translate(-50%,-100%);
+		}
+
+		#sectores {
+		  position: absolute;
+		  width: var(--tamano);height: var(--tamano);
+		  border-radius: 50%;
+		  overflow: hidden;
+		}
+
+		#sectores div {
+		  position: absolute;
+		  top: 0%;left: 50%;
+		  width: calc(var(--tamano)/2);height: calc(var(--tamano)/2);
+		  transform-origin: 0% 100%;
+		  transform: rotate(calc(-90deg + var(--grados) / 2 + var(--grados) * var(--posicion))) skew(calc((90deg - var(--grados)) * -1));
+		}
+		#sectores div::before {
+		  position: absolute;
+		  width: inherit;height: inherit;
+		  border-radius: 0 100% 0 0;
+		  background-image: linear-gradient(45deg,var(--color-impar),black);
+		  content: "";
+		  transform-origin: 0% 100%;
+		  transform: skew(90deg - var(--grados));
+		}
+		#ruleta div:nth-child(even)::before {
+		  background-image: linear-gradient(45deg,var(--color-par),black);
+		}
+
+		div:nth-child(1) {--posicion: 0}
+		div:nth-child(2) {--posicion: 1}
+		div:nth-child(3) {--posicion: 2}
+		div:nth-child(4) {--posicion: 3}
+		div:nth-child(5) {--posicion: 4}
+		div:nth-child(6) {--posicion: 5}
+		div:nth-child(7) {--posicion: 6}
+		div:nth-child(8) {--posicion: 7}
+
+	</style>
+    <!-- Functions -->
+    <script>
+        'use strict'
+
+		var states = new Array(2);
+		// [resize, drag]
+		const resize = 0;
+		const drag = 1;
+		const locale = "es_ES";
+
+		function loadExternalData() {
+			let request = new XMLHttpRequest();
+			request.onreadystatechange = () => {
+				if (request.readyState == 4) {
+					let data = JSON.parse(request.responseText);
+					let list = document.querySelector(".algorithms-links > .hidden-menu");
+					data[locale].forEach(link => {
+						list.innerHTML += '<li><a href="' + link["Link"] + '" />' + link["Title"] + '</a></li>';
+					})
+				}
+			};
+			request.open("GET", "https://zihaohong.github.io/data/links/algorithms.json", true);
+			request.send();
+		}
+
+		function makeResizableDiv(div, action = "mousedown") {
+			const element = document.querySelector(div);
+			const style = window.getComputedStyle(element);
+			const resizers = document.querySelectorAll(div + ' .resizer')
+
+			let measures = element.getBoundingClientRect();
+
+			// dict containing methods for resizing
+			let resizing = {
+				'top': (e) => {
+					element.style.height = measures.height - (e.pageY - measures.y) + 'px';
+					if (style.getPropertyValue('position') == 'absolute') {
+						element.style.top = Math.min(measures.top + (e.pageY - measures.y), measures.bottom) + 'px';
+					}
+				},
+				'right': (e) => {
+					element.style.width = measures.width + (e.pageX - measures.x) + 'px';
+				},
+				'bottom': (e) => {
+					element.style.height = measures.height + (e.pageY - measures.y) + 'px';
+				},
+				'left': (e) => {
+					element.style.width = measures.width - (e.pageX - measures.x) + 'px';
+					if (style.getPropertyValue('position') == 'absolute') {
+						element.style.left = Math.min(measures.left + (e.pageX - measures.x), measures.right) + 'px';
+					}
+				},
+				'top-left': (e) => {
+					element.style.width = measures.width - (e.pageX - measures.x) + 'px';
+					element.style.height = measures.height - (e.pageY - measures.y) + 'px';
+					if (style.getPropertyValue('position') == 'absolute') {
+						element.style.top = Math.min(measures.top + (e.pageY - measures.y), measures.bottom) + 'px';
+						element.style.left = Math.min(measures.left + (e.pageX - measures.x), measures.right) + 'px';
+					}
+				},
+				'top-right': (e) => {
+					element.style.width = measures.width + (e.pageX - measures.x) + 'px';
+					element.style.height = measures.height - (e.pageY - measures.y) + 'px';
+					if (style.getPropertyValue('position') == 'absolute') {
+						element.style.top = Math.min(measures.top + (e.pageY - measures.y), measures.bottom) + 'px';
+					}
+				},
+				'bottom-right': (e) => {
+					element.style.width = measures.width + (e.pageX - measures.x) + 'px';
+					element.style.height = measures.height + (e.pageY - measures.y) + 'px';
+				},
+				'bottom-left': (e) => {
+					element.style.height = measures.height + (e.pageY - measures.y) + 'px';
+					element.style.width = measures.width - (e.pageX - measures.x) + 'px';
+					if (style.getPropertyValue('position') == 'absolute') {
+						element.style.left = Math.min(measures.left + (e.pageX - measures.x), measures.right) + 'px';
+					}
+				}
+			}
+
+			resizers.forEach(resizer => {
+
+				resizer.addEventListener('mousedown', (e) => {
+					e.preventDefault();
+
+					measures = element.getBoundingClientRect();
+					measures.x = e.pageX; // overwriting what x originately means
+					measures.y = e.pageY; // overwriting what y originately means
+
+					window.addEventListener('mousemove', resize);
+					window.addEventListener('mouseup', stopResize);
+				});
+
+				function resize(e) {
+					resizing[resizer.id](e);
+
+					states[resize] = true;
+				}
+
+				function stopResize() {
+					window.removeEventListener('mousemove', resize);
+				}
+			});
+		}
+
+		function makeDraggableDiv(selector, action = "mousedown") {
+			let x, y;
+
+			const element = document.querySelector(selector);
+
+			element.addEventListener(action, dragMouseDown);
+
+			function dragMouseDown(e) {
+				e.preventDefault();
+
+				x = e.clientX;
+				y = e.clientY;
+
+				document.addEventListener("mouseup", closeDragElement);
+				document.addEventListener("mousemove", elementDrag);
+			}
+
+			function elementDrag(e) {
+				e.preventDefault();
+
+				element.style.left = (element.offsetLeft - (x - e.clientX)) + "px";
+				element.style.top = (element.offsetTop - (y - e.clientY)) + "px";
+
+				x = e.clientX;
+				y = e.clientY;
+
+				states[drag] = true;
+			}
+
+			function closeDragElement() {
+				document.removeEventListener('mouseup', closeDragElement);
+				document.removeEventListener('mousemove', elementDrag);
+			}
+		}
+
+		function createArray(length) {
+			let arr = new Array(length || 0),
+				i = length;
+
+			if (arguments.length > 1) {
+				let args = Array.prototype.slice.call(arguments, 1);
+				while (i--) arr[length - 1 - i] = createArray.apply(this, args);
+			}
+
+			return arr;
+		}
+
+		Object.defineProperty(Array.prototype, 'flat', {
+			value: function (depth = 1) {
+				return this.reduce(function (flat, toFlatten) {
+					return flat.concat((Array.isArray(toFlatten) && (depth - 1)) ? toFlatten.flat(depth - 1) : toFlatten);
+				}, []);
+			}
+		});
+
+		Object.defineProperty(Object.prototype, 'recursiveValues', {
+			value: function () {
+				return Object.values(this).map(value =>
+					(value instanceof Object) ? value.recursiveValues() : value
+				).flat();
+			}
+		});
+
+		class Notifier {
+			constructor() {
+				this.lastNotification = new Date().getTime();
+				this.element = null;
+			}
+
+			info(text) {
+				this.notify(text, "info");
+			}
+
+			success(text) {
+				this.notify(text, "success");
+			}
+
+			warning(text) {
+				this.notify(text, "warning");
+			}
+
+			error(text) {
+				this.notify(text, "error");
+			}
+
+			notify(text, type) {
+				let self = this;
+				self.element = $('#notification');
+				self.lastNotification = new Date().getTime();
+				self.element.text(text);
+				self.element.removeClass();
+				self.element.addClass(type);
+				window.setTimeout(function () {
+					if (self.lastNotification + 3000 <= new Date().getTime()) {
+						self.element.fadeOut("slow", function () {
+							self.element[0].innerHTML = '';
+							self.element[0].removeAttribute('style');
+						});
+					}
+				}, 3000);
+			}
+		}
+
+		function getImageBinaryInfo(pic, callback) {
+			let img = new Image();
+			img.onload = function () {
+				let canvas = document.createElement("canvas");
+				let ctxt = canvas.getContext('2d');
+				ctxt.drawImage(img, 0, 0, img.width, img.height);
+				let data = ctxt.getImageData(0, 0, img.width, img.height).data;
+				let pixels = splitArray(data, 4)
+				let pixelsBlackWhite = pixels.map(
+					// check if it is closer to black or white
+					rgba => (0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]) < 128 ? 0 : 1
+				)
+				let matrixData = splitArray(pixelsBlackWhite, img.width)
+				callback(minimizeMatrix(matrixData, {
+					width: img.width,
+					height: img.height
+				}));
+			}
+			img.src = pic;
+		}
+
+		function printMatrix(m, x=null) {
+			if (x != null) {
+				m = splitArray(m, x);
+			}
+			console.log(m.map(a => a.join("")).join("\n"));
+		}
+
+		function splitArray(array, part) {
+			let tmp = [];
+			for (let i = 0; i < array.length; i += part) {
+				tmp.push(array.slice(i, i + part));
+			}
+			return tmp;
+		}
+
+		function minimizeMatrix(matrix, dimension) {
+			// 100 is the max set dimension to be run
+			let maxDimension = 100;
+			let toDivide = Math.ceil(Math.max(dimension.width, dimension.height) / maxDimension)
+			if (toDivide > 1) {
+				let tmpWidth = Math.ceil(dimension.width / toDivide);
+				let tmpHeight = Math.ceil(dimension.height / toDivide);
+				let tmp = createArray(tmpWidth, tmpHeight)
+				for (let i = 0; i < tmpHeight; i++) {
+					for (let j = 0; j < tmpWidth; j++) {
+						let count = 0
+						for (let ii = toDivide * i; ii < toDivide * (i + 1) && ii < dimension.height; ii++) {
+							for (let jj = toDivide * j; jj < toDivide * (j + 1) && jj < dimension.width; jj++) {
+								count += matrix[ii][jj]
+							}
+						}
+						tmp[i][j] = count >= (toDivide * toDivide / 2) ? 1 : 0
+					}
+				}
+				return {
+					width: tmpWidth,
+					height: tmpHeight,
+					data: tmp
+				}
+			}
+			return {
+				width: dimension.width,
+				height: dimension.height,
+				data: matrix
+			}
+		}
+    </script>
+	<!-- Main -->
+	<script>
+		'use strict'
+	
+        document.addEventListener("DOMContentLoaded", () => {
+            loadExternalData()
+        });
+	</script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-bar">
+                <input type="checkbox" class="button" value="Menu">
+                <ul class="menu">
+                    <li class="algorithms-links">
+                        <a href=" ../index.html">Algoritmos &#65516</a>
+                        <ul class="hidden-menu">
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="./doc.html">Documentación &#65516</a>
+                        <ul class="hidden-menu">
+                            <li><a href="./doc.html#description">Descripción</a></li>
+                            <li><a href="./doc.html#contributors">Integrantes</a></li>
+                            <li><a href="./doc.html#comments">Comentarios</a></li>
+                            <li><a href="./doc.html#views">Vistas</a></li>
+                            <li><a href="./doc.html#resources">Recursos</a></li>
+                            <li><a href="./doc.html#tools">Herramientas</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://zrekoj.github.io/CV/">Zihao</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="main">
+            <div id="ruleta">
+				<div id="sectores">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+				<div id="divisores">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+				<div id="caras">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+			</div>
+			<div id="triangulo"></div>
+        </div>
+    </div>
+</body>
