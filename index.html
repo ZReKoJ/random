@@ -255,46 +255,102 @@
 	<style>
 		.main {
 			display: flex;
-			flex-direction: column;
 			position: absolute;
 			top: 50px;
 			right: 0;
 			bottom: 0;
 			left: 0;
-			width: calc(100% - 60px);
-			height: calc(100% - 50px - 60px);
+			width: calc(100%);
+			height: calc(100% - 50px);
 			background-color: var(--surface-color);
-			padding: 30px;
 		}
 
 		.carousel {
-		  grid-row: 1 / 2;
-		  grid-column: 1 / 8;
-		  width: 100vw;
-		  height: 500px;
-		  display: flex;
-		  align-items: center;
-		  justify-content: center;
-		  overflow: hidden;
-		  transform-style: preserve-3d;
-		  perspective: 600px;
-		  --items: 5;
-		  --middle: 3;
-		  --position: 1;
-		  pointer-events: none;
+			position: relative;
+			height: calc(100% - 200px);
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: hidden;
+			transform-style: preserve-3d;
+			perspective: 1500px;
 		}
 
 		.carousel > .item {
-		  position: absolute;
-		  width: 300px;
-		  height: 400px;
-		  background-color: coral;
-		  --r: calc(var(--position) - var(--offset));
-		  --abs: max(calc(var(--r) * -1), var(--r));
-		  transition: all 0.25s linear;
-		  transform: rotateY(calc(-10deg * var(--r)))
-			translateX(calc(-300px * var(--r)));
-		  z-index: calc((var(--position) - var(--abs)));
+			position: absolute;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 200px;
+			height: 300px;
+			border-radius: 15%;
+			box-shadow: 5px 0 5px 0;
+			font-weight: 600;
+			color: var(--on-primary-color);
+			--relative-position: calc(var(--position) - var(--offset));
+			--abs: max(calc(var(--relative-position) * -1), var(--relative-position));
+			transition: all 0.25s linear;
+			transform: rotateY(calc(-10deg * var(--relative-position)))
+			translateX(calc(-200px * var(--relative-position)));
+			z-index: calc((var(--position) - var(--abs)));
+		}
+		
+		.left-panel {
+			position: relative;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			width: 200px;
+			min-width: 100px;
+			max-width: 200px;
+			height: 100%;
+			background-color: var(--secondary-color);
+		}
+		
+		.resizer#right {
+			position: absolute;
+			right: 0;
+			width: 5px;
+			height: 100%;
+			background-color: var(--on-primary-color);
+		}
+		
+		.center-panel {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			width: 100%;
+			height: 100%;
+		}
+		
+		.center-panel > .button {
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			background-color: var(--on-secondary-color);
+		}
+		
+		.right-panel {
+			position: relative;
+			top: 0;
+			bottom: 0;
+			right: 0;
+			width: 200px;
+			min-width: 100px;
+			max-width: 200px;
+			height: 100%;
+			background-color: var(--secondary-color);
+		}
+		
+		.resizer#left {
+			position: absolute;
+			left: 0;
+			width: 5px;
+			height: 100%;
+			background-color: var(--on-primary-color);
 		}
 		
 	</style>
@@ -307,18 +363,6 @@
 		const resize = 0;
 		const drag = 1;
 		const locale = "es_ES";
-
-		function addItems(parent, nElements) {
-			let children = Array.from(Array(nElements).keys()).map((index) => {
-				let element = document.createElement("div")
-				element.classList.add("item")
-				element.style.cssText += `--offset: ${index};background-color: #${Math.floor(Math.random()*16777215).toString(16)};`
-				return element
-			})
-			
-			children.forEach((child) => {parent.appendChild(child)})
-			return children
-		}
 
 		function makeResizableDiv(div, action = "mousedown") {
 			const element = document.querySelector(div);
@@ -502,18 +546,24 @@
 				}, 3000);
 			}
 		}
-		
-		function moveRight(element, position) {
-			element.style.removeProperty('--position')
-			position = (position + element.children.length - 1) % element.children.length
-			element.style.setProperty("--position", position)
-			return position
+
+		function createItem(parent, offset) {
+			let element = document.createElement("div")
+			element.classList.add("item")
+			element.style.setProperty("--offset", offset);
+			element.style.setProperty("background", COLOURS[offset % COLOURS.length]);
+			element.innerHTML = "aaa"
+			parent.appendChild(element)
 		}
 		
-		function moveLeft(elements, position) {
-			element[position].style.removeProperty('--position')
-			position = (position + element.children.length + 1) % element.children.length
-			element[position].style.setProperty("--position", position)
+		function move(element, position) {
+			let half = Math.floor(N / 2)
+			position++
+			if (position > half) {
+				element.removeChild(element.children[0])
+				createItem(element, position + half - 1)
+			}
+			element.style.setProperty("--position", position)
 			return position
 		}
 		
@@ -521,15 +571,41 @@
 	<!-- Main -->
 	<script>
 		'use strict'
+		const N = 50
+		const COLOURS = [
+			"radial-gradient(#1fe4f5, #3fbafe)",
+			"radial-gradient(#fbc1cc, #fa99b2)",
+			"radial-gradient(#76b2fe, #b69efe)",
+			"radial-gradient(#60efbc, #58d5c9)",
+			"radial-gradient(#f588d8, #c0a3e5)"
+		]
 	
         document.addEventListener("DOMContentLoaded", () => {
+		
+			makeResizableDiv(".left-panel")
+			makeResizableDiv(".right-panel")
+		
 			let carousel = document.querySelector(".carousel")
-            let elements = addItems(carousel, 100)
-			let position = Math.floor(elements.length / 2)
+			Array.from(Array(N).keys()).forEach((index) => {createItem(carousel, index)})
+			let position = Math.floor(N / 2)
 			
 			carousel.style.setProperty("--position", position)
+			carousel.style.setProperty("--item", N)
 			
-			setInterval(function () { position = moveRight(carousel, position) }, 200 )
+			let button = document.querySelector(".center-panel > .button")
+			console.log(button)
+			let interval = null
+			button.addEventListener("click", (e) => {
+				if (interval == null) {
+					interval = setInterval(function () { position = move(carousel, position) }, 100 )
+				}
+				else {
+					clearInterval(interval)
+					interval = null
+					console.log(position)
+				}
+			})
+			
 			
         });
 	</script>
@@ -562,7 +638,17 @@
             </div>
         </div>
         <div class="main">
-			<div class="carousel"><div>
+			<div class="left-panel">
+				<div class="resizer" id='right'></div>
+			</div>
+			<div class="center-panel">
+				<h1>Hello World</h1>
+				<div class="carousel"></div>
+				<div class="button"></div>
+			</div>
+			<div class="right-panel">
+				<div class="resizer" id='left'></div>
+			</div>
         </div>
     </div>
 </body>
