@@ -266,123 +266,37 @@
 			background-color: var(--surface-color);
 			padding: 30px;
 		}
-		
-		:root {
-		  --top: 20px;
-		  --left: 20px;
-		  --tamano: 350px;
-		  --grados: 45deg;
-		  --rotacion: 0deg;
-		  --color-impar: turquoise;
-		  --color-par: yellow;
-		  --color-borde: #000;
-		  --color-flecha: black;
-		  --color-centro: red;
-		  --color-divisor: #449;
-		}
 
-		#triangulo {
-		  position: absolute;
-		  top: calc(var(--top) + var(--tamano)/30);left: calc(var(--left) + var(--tamano)/30);
-		  width: 0;height: 0; 
-		  border-left: calc(var(--tamano)/15) solid transparent;
-		  border-right: calc(var(--tamano)/15) solid transparent;
-		  border-bottom: calc(var(--tamano)/5) solid var(--color-flecha);
-		  transform: translate(calc(var(--tamano)/2),calc(var(--tamano)/2)) translate(-50%,-104.5%);
-		}
-		#triangulo:after {
-		  position: absolute;
-		  width: calc(var(--tamano)/15);height: calc(var(--tamano)/15);
-		  top: 100%;left: 0%;
-		  transform: translate(-50%,260%);
-		  content: "";
-		  background-color: var(--color-centro);
-		  border-radius: 50%;
-		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
-		}
-
-		#ruleta {
-		  position: absolute;
-		  top: var(--top);left: var(--left);
-		  width: var(--tamano);height: var(--tamano);
-		  background-color: red;
-		  border-radius: 50%;
-		  border: calc(var(--tamano)/30) solid var(--color-borde);
-		  will-change: transform;transition: transform 10s cubic-bezier(0,0,0.3,1);
-		  transform: rotate(var(--rotacion));
-		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
-		}
-
-		#ruleta:hover {
-		  --rotacion: 4000deg;
-		}
-
-		#ruleta:after {
-		  position: absolute;
-		  width: calc(var(--tamano)/7.5);height: calc(var(--tamano)/7.5);
-		  top: 50%;left: 50%;
-		  transform: translate(-50%,-50%);
-		  content: "";
-		  background-color: var(--color-flecha);
-		  border-radius: 50%;
-		  box-shadow: 0px 0px calc(var(--tamano)/20) black;
-		}
-
-		#caras div {
-		  position: absolute;
-		  top: calc(var(--tamano)/2);left: calc(var(--tamano)/2);
-		  width: calc(var(--tamano)/6);height: calc(var(--tamano)/6);
-		  background-color: blueviolet;
-		  border-radius: 50%; 
-		  transform-origin: 0 0;
-		  transform: rotate(calc(var(--grados) * var(--posicion))) translate(0,calc(-1 * var(--tamano) / 2.7)) translate(-50%,-50%);
-		}
-
-		#divisores div {
-		  position: absolute;
-		  top: calc(var(--tamano)/2);left: calc(var(--tamano)/2);
-		  width: calc(var(--tamano)/40);height: calc(var(--tamano)/2);
-		  background-color: var(--color-divisor);
-		  transform-origin: 0 0;
-		  transform: rotate(calc(var(--grados) / 2 + var(--grados) * var(--posicion))) translate(-50%,-100%);
-		}
-
-		#sectores {
-		  position: absolute;
-		  width: var(--tamano);height: var(--tamano);
-		  border-radius: 50%;
+		.carousel {
+		  grid-row: 1 / 2;
+		  grid-column: 1 / 8;
+		  width: 100vw;
+		  height: 500px;
+		  display: flex;
+		  align-items: center;
+		  justify-content: center;
 		  overflow: hidden;
+		  transform-style: preserve-3d;
+		  perspective: 600px;
+		  --items: 5;
+		  --middle: 3;
+		  --position: 1;
+		  pointer-events: none;
 		}
 
-		#sectores div {
+		.carousel > .item {
 		  position: absolute;
-		  top: 0%;left: 50%;
-		  width: calc(var(--tamano)/2);height: calc(var(--tamano)/2);
-		  transform-origin: 0% 100%;
-		  transform: rotate(calc(-90deg + var(--grados) / 2 + var(--grados) * var(--posicion))) skew(calc((90deg - var(--grados)) * -1));
+		  width: 300px;
+		  height: 400px;
+		  background-color: coral;
+		  --r: calc(var(--position) - var(--offset));
+		  --abs: max(calc(var(--r) * -1), var(--r));
+		  transition: all 0.25s linear;
+		  transform: rotateY(calc(-10deg * var(--r)))
+			translateX(calc(-300px * var(--r)));
+		  z-index: calc((var(--position) - var(--abs)));
 		}
-		#sectores div::before {
-		  position: absolute;
-		  width: inherit;height: inherit;
-		  border-radius: 0 100% 0 0;
-		  background-image: linear-gradient(45deg,var(--color-impar),black);
-		  content: "";
-		  transform-origin: 0% 100%;
-		  transform: skew(90deg - var(--grados));
-		}
-		#ruleta div:nth-child(even)::before {
-		  background-image: linear-gradient(45deg,var(--color-par),black);
-		}
-
-		div:nth-child(1) {--posicion: 0}
-		div:nth-child(2) {--posicion: 1}
-		div:nth-child(3) {--posicion: 2}
-		div:nth-child(4) {--posicion: 3}
-		div:nth-child(5) {--posicion: 4}
-		div:nth-child(6) {--posicion: 5}
-		div:nth-child(7) {--posicion: 6}
-		div:nth-child(8) {--posicion: 7}
-
+		
 	</style>
     <!-- Functions -->
     <script>
@@ -394,19 +308,16 @@
 		const drag = 1;
 		const locale = "es_ES";
 
-		function loadExternalData() {
-			let request = new XMLHttpRequest();
-			request.onreadystatechange = () => {
-				if (request.readyState == 4) {
-					let data = JSON.parse(request.responseText);
-					let list = document.querySelector(".algorithms-links > .hidden-menu");
-					data[locale].forEach(link => {
-						list.innerHTML += '<li><a href="' + link["Link"] + '" />' + link["Title"] + '</a></li>';
-					})
-				}
-			};
-			request.open("GET", "https://zihaohong.github.io/data/links/algorithms.json", true);
-			request.send();
+		function addItems(parent, nElements) {
+			let children = Array.from(Array(nElements).keys()).map((index) => {
+				let element = document.createElement("div")
+				element.classList.add("item")
+				element.style.cssText += `--offset: ${index};background-color: #${Math.floor(Math.random()*16777215).toString(16)};`
+				return element
+			})
+			
+			children.forEach((child) => {parent.appendChild(child)})
+			return children
 		}
 
 		function makeResizableDiv(div, action = "mousedown") {
@@ -591,81 +502,35 @@
 				}, 3000);
 			}
 		}
-
-		function getImageBinaryInfo(pic, callback) {
-			let img = new Image();
-			img.onload = function () {
-				let canvas = document.createElement("canvas");
-				let ctxt = canvas.getContext('2d');
-				ctxt.drawImage(img, 0, 0, img.width, img.height);
-				let data = ctxt.getImageData(0, 0, img.width, img.height).data;
-				let pixels = splitArray(data, 4)
-				let pixelsBlackWhite = pixels.map(
-					// check if it is closer to black or white
-					rgba => (0.2126 * rgba[0] + 0.7152 * rgba[1] + 0.0722 * rgba[2]) < 128 ? 0 : 1
-				)
-				let matrixData = splitArray(pixelsBlackWhite, img.width)
-				callback(minimizeMatrix(matrixData, {
-					width: img.width,
-					height: img.height
-				}));
-			}
-			img.src = pic;
+		
+		function moveRight(element, position) {
+			element.style.removeProperty('--position')
+			position = (position + element.children.length - 1) % element.children.length
+			element.style.setProperty("--position", position)
+			return position
 		}
-
-		function printMatrix(m, x=null) {
-			if (x != null) {
-				m = splitArray(m, x);
-			}
-			console.log(m.map(a => a.join("")).join("\n"));
+		
+		function moveLeft(elements, position) {
+			element[position].style.removeProperty('--position')
+			position = (position + element.children.length + 1) % element.children.length
+			element[position].style.setProperty("--position", position)
+			return position
 		}
-
-		function splitArray(array, part) {
-			let tmp = [];
-			for (let i = 0; i < array.length; i += part) {
-				tmp.push(array.slice(i, i + part));
-			}
-			return tmp;
-		}
-
-		function minimizeMatrix(matrix, dimension) {
-			// 100 is the max set dimension to be run
-			let maxDimension = 100;
-			let toDivide = Math.ceil(Math.max(dimension.width, dimension.height) / maxDimension)
-			if (toDivide > 1) {
-				let tmpWidth = Math.ceil(dimension.width / toDivide);
-				let tmpHeight = Math.ceil(dimension.height / toDivide);
-				let tmp = createArray(tmpWidth, tmpHeight)
-				for (let i = 0; i < tmpHeight; i++) {
-					for (let j = 0; j < tmpWidth; j++) {
-						let count = 0
-						for (let ii = toDivide * i; ii < toDivide * (i + 1) && ii < dimension.height; ii++) {
-							for (let jj = toDivide * j; jj < toDivide * (j + 1) && jj < dimension.width; jj++) {
-								count += matrix[ii][jj]
-							}
-						}
-						tmp[i][j] = count >= (toDivide * toDivide / 2) ? 1 : 0
-					}
-				}
-				return {
-					width: tmpWidth,
-					height: tmpHeight,
-					data: tmp
-				}
-			}
-			return {
-				width: dimension.width,
-				height: dimension.height,
-				data: matrix
-			}
-		}
+		
     </script>
 	<!-- Main -->
 	<script>
 		'use strict'
 	
         document.addEventListener("DOMContentLoaded", () => {
-            loadExternalData()
+			let carousel = document.querySelector(".carousel")
+            let elements = addItems(carousel, 100)
+			let position = Math.floor(elements.length / 2)
+			
+			carousel.style.setProperty("--position", position)
+			
+			setInterval(function () { position = moveRight(carousel, position) }, 200 )
+			
         });
 	</script>
 </head>
@@ -697,39 +562,7 @@
             </div>
         </div>
         <div class="main">
-            <div id="ruleta">
-				<div id="sectores">
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-				</div>
-				<div id="divisores">
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-				</div>
-				<div id="caras">
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-					<div></div>
-				</div>
-			</div>
-			<div id="triangulo"></div>
+			<div class="carousel"><div>
         </div>
     </div>
 </body>
